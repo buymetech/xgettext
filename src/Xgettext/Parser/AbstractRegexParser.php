@@ -66,20 +66,20 @@ abstract class AbstractRegexParser
 
             // foreach every call match to analyze arguments, they must be strings
             foreach ($calls as $call) {
-                $arguments = $this->extractArguments($call['arguments']);
+                // $arguments = $this->extractArguments($call['arguments']);
 
-                // false positive, no matching arguments inside
-                if (empty($arguments)) {
-                    continue;
-                }
+                // // false positive, no matching arguments inside
+                // if (empty($arguments)) {
+                //     continue;
+                // }
 
                 // first argument is msgid
-                $msgid = str_replace('\\' . $arguments[0]['delimiter'], $arguments[0]['delimiter'], $arguments[0]['arguments']);
+                $msgid = $call['keyword'];//str_replace('\\' . $arguments[0]['delimiter'], $arguments[0]['delimiter'], $arguments[0]['arguments']);
 
                 // if we did not have found already this string, create it
                 if (!in_array($msgid, array_keys($this->strings))) {
                     // we have a plural form case
-                    if (2 === count($this->keywords[$call['keyword']])) {
+                    if (isset($this->keywords[$call['keyword']]) && 2 === count($this->keywords[$call['keyword']])) {
                         // we asked for a plural keyword above, but only one argument were found. Abort silently
                         if (!isset($arguments[1])) {
                             continue;

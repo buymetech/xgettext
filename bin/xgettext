@@ -28,10 +28,10 @@ $input = array();
 $defaults = array(
     'files' => array(),
     '-o'    => null,
-    '-k'    => array('_', 'gettext', 'ngettext:1,2'),
+    '-k'    => array('t'),
     '-c'    => 'UTF-8',
-    '-e'    => array('js', 'html'),
-    '-l'    => 'Javascript',
+    '-e'    => array('hbs'),
+    '-l'    => 'Handlebars',
 );
 
 while ($i < count($argv)) {

@@ -8,7 +8,7 @@ use \RecursiveDirectoryIterator,
 
 class Finder
 {
-    public static function findr($path, $extensions = array('.js', '.html'))
+    public static function findr($path, $extensions = array('hbs'))
     {
         $files = [];
 
@@ -19,11 +19,13 @@ class Finder
         $di = new RecursiveDirectoryIterator($path);
 
         foreach (new RecursiveIteratorIterator($di) as $filename => $file) {
-            if (1 === preg_match('/\.[0-9a-z]+$/i', $filename, $matches) && in_array($matches[0], $extensions)) {
-                $files[] = $filename;
-            }
-        }
 
+          if($file->isFile() && in_array($file->getExtension(), $extensions)) {
+            $files[] = $file->getRealPath();
+          }
+
+        }
+    
         return $files;
     }
 }
