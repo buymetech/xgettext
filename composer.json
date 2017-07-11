@@ -1,5 +1,5 @@
 {
-    "name": "wisembly/xgettext",
+    "name": "igorgoroshit/xgettext",
     "version": "0.0.9",
     "description": "Javascript poEdit parser written in PHP",
     "keywords": [ "Poedit", "xgettext", "gettext.js", "parser", "i18n", "po2json", "handlebars" ],
@@ -12,6 +12,10 @@
         {
             "name": "Mathieu Ghaleb",
             "email": "mathieu@wisembly.com"
+        },
+        {
+            "name": "Igor Goroshit",
+            "email": "igor@webt.co.il"
         }
     ],
     "bin": [
