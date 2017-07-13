@@ -2,8 +2,7 @@
 
 namespace Xgettext\Parser;
 
-// http://stackoverflow.com/questions/26725207/find-every-string-between-quotes-inside-specific-curly-braces
-class HandlebarsParser extends AbstractRegexParser implements ParserInterface
+class EmberjsParser extends AbstractRegexParser implements ParserInterface
 {
     public function extractCalls($line)
     {
@@ -11,7 +10,7 @@ class HandlebarsParser extends AbstractRegexParser implements ParserInterface
         $matches2 = [];
         $calls = array();
         //build pattern
-        $pattern1 = '/\{\{t\s*["](.*)["](.*)\}\}/U';
+        $pattern1 = '/\.t\(\s*["](.*)["](.*)\)/U';
         preg_match_all($pattern1, $line, $matches1);
         foreach ($matches1[0] as $index => $keyword) {
             $calls[] = array(
@@ -20,25 +19,7 @@ class HandlebarsParser extends AbstractRegexParser implements ParserInterface
             );
         }
 
-        $pattern2 = '/\(t\s*["](.*)["](.*)\)/U';
-        preg_match_all($pattern2, $line, $matches2);
-        foreach ($matches2[0] as $index => $keyword) {
-            $calls[] = array(
-                'keyword'   => $matches2[1][$index],
-                'arguments' => $matches2[2][$index],
-            );
-        }
-
-        $pattern1 = '/\{\{t\s*[\'](.*)["](.*)\}\}/U';
-        preg_match_all($pattern1, $line, $matches1);
-        foreach ($matches1[0] as $index => $keyword) {
-            $calls[] = array(
-                'keyword'   => $matches1[1][$index],
-                'arguments' => $matches1[2][$index],
-            );
-        }
-
-        $pattern2 = '/\(t\s*[\'](.*)[\'](.*)\)/U';
+        $pattern2 =  '/\.t\(\s*[\'](.*)[\'](.*)\)/U';
         preg_match_all($pattern2, $line, $matches2);
         foreach ($matches2[0] as $index => $keyword) {
             $calls[] = array(
