@@ -2,60 +2,93 @@
 
 namespace Xgettext\Parser;
 
+use Xgettext\Poedit\PoeditString;
+
 class JavascriptParser extends AbstractRegexParser implements ParserInterface
 {
-    public function extractCalls($line)
+    public function parse($string = null)
     {
-        $calls = $this->handleMultiline($line);
+        $line_count = 1;
 
-        if (count($calls)) {
-            return $calls;
-        }
+        $contents   = file_get_contents($this->file);
+        $len = mb_strlen($contents);
+        $col = 0;
 
-        preg_match_all('`(' . implode('|', array_keys($this->keywords)) . ')\((.*?["\'].*)\s*`', $line, $matches);
+        for($i = 0; $i < $len; $i++)
+        {
+            $open = null;
 
-        foreach ($matches[1] as $index => $keyword) {
-            $calls[] = array(
-                'keyword'   => $keyword,
-                'arguments' => $matches[2][$index],
-            );
-        }
-
-        return $calls;
-    }
-
-    // handle multiple calls in a single line.
-    private function handleMultiline($line)
-    {
-        $calls = array();
-        $keywords = array_keys($this->keywords);
-        $splits = preg_split('`(' . implode('|', $keywords) . ')\(`', $line, -1, PREG_SPLIT_DELIM_CAPTURE);
-
-        if (count($splits) > 3) {
-            foreach ($splits as $index => $split) {
-                if (in_array($split, $keywords)) {
-                    $calls = array_merge($calls, $this->extractCalls($split . '(' . $splits[$index+1]));
-                }
+            if(mb_substr($contents, $i, 3) == '.t(')
+            {
+                $chars = $open = '.t(';
+                $close = ')';
+            }
+            else 
+            {
+                $chars = mb_substr($contents, $i, 1);
             }
 
-            return $calls;
+            if($chars[0] == "\n")
+            {
+                $line_count++;
+                $col = 0;
+            }
+
+            if($chars === $open)
+            {
+                $i = $i + mb_strlen($open);
+                
+                //ignore whitespace
+                $char = mb_substr($contents, $i, 1);
+                while ( !in_array($char, ['"', "'"]) )
+                {
+                    if($char == "\n")
+                    {
+                         $line_count++;
+                         $col = 0;
+                    }   
+
+                    $i++;
+                    $char = mb_substr($contents, $i, 1);
+                }
+                $openchar = $char;
+
+
+                //extract string
+                $start = ++$i;
+                $char = mb_substr($contents, $start, 1);
+                $string = '';
+
+                while( $char != $openchar )
+                {
+                    $string .= $char;
+                    $char = mb_substr($contents, ++$i, 1);
+                }
+                $end = $i;
+
+                //replace \r\n with \n (normalize)
+                $msgid = str_replace(["\r\n", "\t"], ["\n", "    "], $string);
+                //replace multiple whitespace with one whitespace
+                $msgid = preg_replace(["/ {2,}/"], " ", $msgid);
+                //replace whitespace follow by \n with \n
+                //replace \n follwed by whitespace with \n
+                $msgid = preg_replace(["/ {1,}\n/", "/\n {1,}/"], "\n", $msgid);
+                //escape \n
+                $msgid = str_replace("\n", '\n', $msgid);
+
+                $comment = $this->file . ':' . $line_count;
+                if(!isset($this->strings[$msgid]))
+                {
+                    $this->strings[$msgid] = new PoeditString($msgid);
+                }
+
+                $this->strings[$msgid]->addReference($comment);
+               
+                continue;
+            }
+
         }
 
-        return array();
-    }
-
-    public function extractArguments($arguments)
-    {
-        $args = array();
-        preg_match_all('`(?:\s*([\'"]))(.+?)(?=(?<!\\\)\1)\1`', $arguments, $matches);
-
-        foreach ($matches[1] as $index => $delimiter) {
-            $args[] = array(
-                'delimiter' => $delimiter,
-                'arguments'  => $matches[2][$index],
-            );
-        }
-
-        return $args;
+        return $this->strings;
     }
 }

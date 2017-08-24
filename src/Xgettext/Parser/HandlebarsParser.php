@@ -2,66 +2,95 @@
 
 namespace Xgettext\Parser;
 
-// http://stackoverflow.com/questions/26725207/find-every-string-between-quotes-inside-specific-curly-braces
 class HandlebarsParser extends AbstractRegexParser implements ParserInterface
 {
-    public function extractCalls($line)
+    public function parse($string = null)
     {
-        $matches1 = [];
-        $matches2 = [];
-        $calls = array();
-        //build pattern
-        $pattern1 = '/\{\{t\s*["](.*)["](.*)\}\}/U';
-        preg_match_all($pattern1, $line, $matches1);
-        foreach ($matches1[0] as $index => $keyword) {
-            $calls[] = array(
-                'keyword'   => $matches1[1][$index],
-                'arguments' => $matches1[2][$index],
-            );
+        $line_count = 1;
+
+        $contents   = file_get_contents($this->file);
+        $len = mb_strlen($contents);
+        $col = 0;
+
+        for($i = 0; $i < $len; $i++)
+        {
+            $open = null;
+
+            if(mb_substr($contents, $i, 3) == '(t ')
+            {
+                $chars = $open = '(t ';
+                $close = ')';
+            }
+            else if(mb_substr($contents, $i, 4) ==  '{{t ')
+            {
+                $chars = $open = '{{t';
+                $close = '}}';
+            }
+            else {
+                $chars = mb_substr($contents, $i, 1);
+            }
+
+            if($chars[0] == "\n")
+            {
+                $line_count++;
+                $col = 0;
+            }
+
+            if($chars === $open)
+            {
+                $i = $i + mb_strlen($open);
+                
+                //ignore whitespace
+                $char = mb_substr($contents, $i, 1);
+                while ( !in_array($char, ['"', "'"]) )
+                {
+                    if($char == "\n")
+                    {
+                         $line_count++;
+                         $col = 0;
+                    }   
+
+                    $i++;
+                    $char = mb_substr($contents, $i, 1);
+                }
+                $openchar = $char;
+
+
+                //extract string
+                $start = ++$i;
+                $char = mb_substr($contents, $start, 1);
+                $string = '';
+
+                while( $char != $openchar )
+                {
+                    $string .= $char;
+                    $char = mb_substr($contents, ++$i, 1);
+                }
+                $end = $i;
+
+                //replace \r\n with \n (normalize)
+                $msgid = str_replace(["\r\n", "\t"], ["\n", "    "], $string);
+                //replace multiple whitespace with one whitespace
+                $msgid = preg_replace(["/ {2,}/"], " ", $msgid);
+                //replace whitespace follow by \n with \n
+                //replace \n follwed by whitespace with \n
+                $msgid = preg_replace(["/ {1,}\n/", "/\n {1,}/"], "\n", $msgid);
+                //escape \n
+                $msgid = str_replace("\n", '\n', $msgid);
+
+                $comment = $this->file . ':' . $line_count;
+                if(!isset($this->strings[$msgid]))
+                {
+                    $this->strings[$msgid] = new PoeditString($msgid);
+                }
+
+                $this->strings[$msgid]->addReference($comment);
+               
+                continue;
+            }
+
         }
 
-        $pattern2 = '/\(t\s*["](.*)["](.*)\)/U';
-        preg_match_all($pattern2, $line, $matches2);
-        foreach ($matches2[0] as $index => $keyword) {
-            $calls[] = array(
-                'keyword'   => $matches2[1][$index],
-                'arguments' => $matches2[2][$index],
-            );
-        }
-
-        $pattern1 = '/\{\{t\s*[\'](.*)["](.*)\}\}/U';
-        preg_match_all($pattern1, $line, $matches1);
-        foreach ($matches1[0] as $index => $keyword) {
-            $calls[] = array(
-                'keyword'   => $matches1[1][$index],
-                'arguments' => $matches1[2][$index],
-            );
-        }
-
-        $pattern2 = '/\(t\s*[\'](.*)[\'](.*)\)/U';
-        preg_match_all($pattern2, $line, $matches2);
-        foreach ($matches2[0] as $index => $keyword) {
-            $calls[] = array(
-                'keyword'   => $matches2[1][$index],
-                'arguments' => $matches2[2][$index],
-            );
-        }
-
-        return $calls;
-    }
-
-    public function extractArguments($arguments)
-    {
-        $args = array();
-        preg_match_all('`(["\'])(.*?)\1`', $arguments, $matches);
-
-        foreach ($matches[1] as $index => $delimiter) {
-            $args[] = array(
-                'delimiter' => $delimiter,
-                'arguments'  => $matches[2][$index],
-            );
-        }
-
-        return $args;
+        return $this->strings;
     }
 }

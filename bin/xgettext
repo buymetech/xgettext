@@ -30,8 +30,8 @@ $defaults = array(
     '-o'    => null,
     '-k'    => array('t'),
     '-c'    => 'UTF-8',
-    '-e'    => array('hbs'),
-    '-l'    => 'Handlebars',
+    '-e'    => array('js'),
+    '-l'    => 'Javascript',
 );
 
 while ($i < count($argv)) {
