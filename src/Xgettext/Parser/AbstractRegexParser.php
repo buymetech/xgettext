@@ -18,6 +18,7 @@ abstract class AbstractRegexParser
         $this->strings = array();
     }
 
+
 //     public function parse()
 //     {
 //         $line_count = 1;

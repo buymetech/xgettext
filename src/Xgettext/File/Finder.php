@@ -8,8 +8,9 @@ use \RecursiveDirectoryIterator,
 
 class Finder
 {
-    public static function findr($path, $extensions = array('hbs'))
+    public static function findr($path)
     {
+        $extensions = array('hbs', 'js');
         $files = [];
 
         if (!is_dir($path)) {

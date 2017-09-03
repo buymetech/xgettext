@@ -13,7 +13,8 @@ class Xgettext
     public function __construct(array $files, $output, array $keywords = array('_'), $parser = 'javascript', $enc = 'UTF-8', $cli = false)
     {
         $this->cli = $cli;
-        $parser = 'Xgettext\\Parser\\' . ucfirst(strtolower($parser)) . 'Parser';
+        $hbsParser = 'Xgettext\\Parser\\HandlebarsParser';
+        $jsParser  = 'Xgettext\\Parser\\JavascriptParser';
 
         if (empty($files)) {
             throw new InvalidArgumentException('You did not provide any input file.');
@@ -26,9 +27,19 @@ class Xgettext
         $poeditFile = new PoeditFile();
 
         foreach ($files as $file) {
+            $start = strrpos($file, '.') + 1;
+            $end   = strlen($file) - $start;
+            $ext   = substr($file, $start, $end);
             try {
-                $fileParser = new $parser($file, $keywords);
-                $poeditFile->addStrings($fileParser->parse());
+                if ( $ext == 'hbs') {
+                    $fileParser = new $hbsParser($file, $keywords);
+                }
+
+                if ( $ext == 'js' ) {
+                    $fileParser = new $jsParser($file, $keywords);
+                }
+                print_r($fileParser->parse());
+               // $poeditFile->addStrings($fileParser->parse());
             } catch (Exception $e) {
                 throw new InvalidArgumentException(sprintf('"%s" parser does not exist', $parser));
             }

@@ -2,6 +2,8 @@
 
 namespace Xgettext\Parser;
 
+use Xgettext\Poedit\PoeditString;
+
 class HandlebarsParser extends AbstractRegexParser implements ParserInterface
 {
     public function parse($string = null)
