@@ -71,14 +71,14 @@ class HandlebarsParser extends AbstractRegexParser implements ParserInterface
                 $end = $i;
 
                 //replace \r\n with \n (normalize)
-                $msgid = str_replace(["\r\n", "\t"], ["\n", "    "], $string);
+                $msgid = str_replace(["\r\n", "\t"], ["\n", " "], $string);
                 //replace multiple whitespace with one whitespace
                 $msgid = preg_replace(["/ {2,}/"], " ", $msgid);
                 //replace whitespace follow by \n with \n
                 //replace \n follwed by whitespace with \n
                 $msgid = preg_replace(["/ {1,}\n/", "/\n {1,}/"], "\n", $msgid);
                 //escape \n
-                $msgid = str_replace("\n", '\n', $msgid);
+                //$msgid = str_replace("\n", '\n', $msgid);
 
                 $comment = $this->file . ':' . $line_count;
                 if(!isset($this->strings[$msgid]))

@@ -74,7 +74,7 @@ class JavascriptParser extends AbstractRegexParser implements ParserInterface
                 //replace \n follwed by whitespace with \n
                 $msgid = preg_replace(["/ {1,}\n/", "/\n {1,}/"], "\n", $msgid);
                 //escape \n
-                $msgid = str_replace("\n", '\n', $msgid);
+                //$msgid = str_replace("\n", '\n', $msgid);
 
                 $comment = $this->file . ':' . $line_count;
                 if(!isset($this->strings[$msgid]))
