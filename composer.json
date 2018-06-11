@@ -1,6 +1,6 @@
 {
     "name": "igorgoroshit/xgettext",
-    "version": "0.0.9",
+    "version": "0.1.0",
     "description": "Javascript poEdit parser written in PHP",
     "keywords": [ "Poedit", "xgettext", "gettext.js", "parser", "i18n", "po2json", "handlebars" ],
     "license": "MIT",

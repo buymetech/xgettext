@@ -8,23 +8,30 @@ use \RecursiveDirectoryIterator,
 
 class Finder
 {
-    public static function findr($path)
+    public static function findr($paths)
     {
-        $extensions = array('hbs', 'js');
-        $files = [];
-
-        if (!is_dir($path)) {
-            throw new InvalidArgumentException("A valid directory path must be given here");
+        if(!is_array($paths))
+        {
+            $paths = [$paths];
         }
 
-        $di = new RecursiveDirectoryIterator($path);
+        $extensions = array('hbs', 'js', 'php');
+        $files = [];
 
-        foreach (new RecursiveIteratorIterator($di) as $filename => $file) {
+        foreach ($paths as $path) {
+            if (!is_dir($path)) {
+                throw new InvalidArgumentException("A valid directory path must be given here");
+            }
 
-          if($file->isFile() && in_array($file->getExtension(), $extensions)) {
-            $files[] = $file->getRealPath();
-          }
+            $di = new RecursiveDirectoryIterator($path);
 
+            foreach (new RecursiveIteratorIterator($di) as $filename => $file) {
+
+              if($file->isFile() && in_array($file->getExtension(), $extensions)) {
+                $files[] = $file->getRealPath();
+              }
+
+            }
         }
     
         return $files;
