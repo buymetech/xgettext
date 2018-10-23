@@ -23,9 +23,19 @@ class HandlebarsParser extends AbstractRegexParser implements ParserInterface
                 $chars = $open = '(t ';
                 $close = ')';
             }
+            else if(mb_substr($contents, $i, 4) == '(tt ')
+            {
+                $chars = $open = '(tt ';
+                $close = ')';
+            }
             else if(mb_substr($contents, $i, 4) ==  '{{t ')
             {
                 $chars = $open = '{{t';
+                $close = '}}';
+            }
+            else if(mb_substr($contents, $i, 5) ==  '{{tt ')
+            {
+                $chars = $open = '{{tt';
                 $close = '}}';
             }
             else {
