@@ -25,6 +25,11 @@ class PhpParser extends AbstractRegexParser implements ParserInterface
                 $chars = $open = 'L10N::t(';
                 $close = ')';
             }
+            else if(mb_substr($contents, $i, 9) ==  'L10N::te(')
+            {
+                $chars = $open = 'L10N::te(';
+                $close = ')';
+            }
             else 
             {
                 $chars = mb_substr($contents, $i, 1);
