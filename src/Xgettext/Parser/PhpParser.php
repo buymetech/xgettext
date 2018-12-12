@@ -68,7 +68,7 @@ class PhpParser extends AbstractRegexParser implements ParserInterface
         $this->open     = 'L10N::t(';
         $this->close    = ')';
         if($this->startIndex1 === false || ( $this->startIndex2!== false && $this->startIndex2 < $this->startIndex1) ) {
-            $this->open     = 'L10N::te( ';
+            $this->open     = 'L10N::te(';
             $index = $this->startIndex2;
         }
         $this->index = $index + mb_strlen($this->open);
