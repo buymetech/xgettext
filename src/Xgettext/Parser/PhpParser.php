@@ -44,6 +44,9 @@ class PhpParser extends AbstractRegexParser implements ParserInterface
             $msgid = preg_replace(["/ {1,}\n/", "/\n {1,}/"], "\n", $msgid);
             //escape \n
             //$msgid = str_replace("\n", '\n', $msgid);
+            if(empty($msgid)) {
+                continue;
+            }
             $comment = $this->file . ':' . $line_count;
             if(!isset($this->strings[$msgid]))
             {
