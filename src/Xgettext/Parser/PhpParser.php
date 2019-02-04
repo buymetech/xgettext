@@ -6,91 +6,76 @@ use Xgettext\Poedit\PoeditString;
 
 class PhpParser extends AbstractRegexParser implements ParserInterface
 {
-    public function parse($string = null)
-    {
+    protected $startIndex1,$startIndex2,$index,$open,$close;
+    public function parse($string = null) {
         $line_count = 1;
-
-        $contents   = file_get_contents($this->file);
-        $len        = mb_strlen($contents);
-        $col        = 0;
-// if($this->file == "/Applications/XAMPP/xamppfiles/htdocs/therapee/resources/views/session/0.php") {
-//     die($contents);
-// }
-        for($i = 0; $i < $len; $i++)
-        {
-            $open = null;
-
-            if(mb_substr($contents, $i, 8) == 'L10N::t(')
-            {
-                $chars = $open = 'L10N::t(';
-                $close = ')';
+        $contents       = file_get_contents($this->file);
+        $len            = mb_strlen($contents);
+        $col            = 0;
+        $this->strings  = [];
+        $this->index    = 0;
+        while ($this->hasTranslations($contents)) {
+            //ignore whitespace
+            $char = mb_substr($contents, $this->index, 1);
+            while ( !in_array($char, ['"', "'"]) ) {
+                if($char == "\n") {
+                     $line_count++;
+                     $col = 0;
+                }   
+                $this->index++;
+                $char = mb_substr($contents, $this->index, 1);
             }
-            else 
-            {
-                $chars = mb_substr($contents, $i, 1);
+            $openchar   = $char;
+            $start      = ++$this->index;
+            $char       = mb_substr($contents, $start, 1);
+            $string     = '';
+
+            while( $char != $openchar ) {
+                $string .= $char;
+                $char = mb_substr($contents, ++$this->index, 1);
             }
 
-            if($chars[0] == "\n")
-            {
-                $line_count++;
-                $col = 0;
-            }
-
-            if($chars === $open)
-            {
-                $i = $i + mb_strlen($open);
-                
-                //ignore whitespace
-                $char = mb_substr($contents, $i, 1);
-                while ( !in_array($char, ['"', "'"]) )
-                {
-                    if($char == "\n")
-                    {
-                         $line_count++;
-                         $col = 0;
-                    }   
-
-                    $i++;
-                    $char = mb_substr($contents, $i, 1);
-                }
-                $openchar = $char;
-
-
-                //extract string
-                $start = ++$i;
-                $char = mb_substr($contents, $start, 1);
-                $string = '';
-
-                while( $char != $openchar )
-                {
-                    $string .= $char;
-                    $char = mb_substr($contents, ++$i, 1);
-                }
-                $end = $i;
-
-                //replace \r\n with \n (normalize)
-                $msgid = str_replace(["\r\n", "\t"], ["\n", "    "], $string);
-                //replace multiple whitespace with one whitespace
-                $msgid = preg_replace(["/ {2,}/"], " ", $msgid);
-                //replace whitespace follow by \n with \n
-                //replace \n follwed by whitespace with \n
-                $msgid = preg_replace(["/ {1,}\n/", "/\n {1,}/"], "\n", $msgid);
-                //escape \n
-                //$msgid = str_replace("\n", '\n', $msgid);
-
-                $comment = $this->file . ':' . $line_count;
-                if(!isset($this->strings[$msgid]))
-                {
-                    $this->strings[$msgid] = new PoeditString($msgid);
-                }
-
-                $this->strings[$msgid]->addReference($comment);
-               
+            //replace \r\n with \n (normalize)
+            $msgid = str_replace(["\r\n", "\t"], ["\n", " "], $string);
+            //replace multiple whitespace with one whitespace
+            $msgid = preg_replace(["/ {2,}/"], " ", $msgid);
+            //replace whitespace follow by \n with \n
+            //replace \n follwed by whitespace with \n
+            $msgid = preg_replace(["/ {1,}\n/", "/\n {1,}/"], "\n", $msgid);
+            //escape \n
+            //$msgid = str_replace("\n", '\n', $msgid);
+            if(empty($msgid)) {
                 continue;
             }
+            $comment = $this->file . ':' . $line_count;
+            if(!isset($this->strings[$msgid]))
+            {
+                $this->strings[$msgid] = new PoeditString($msgid);
+            }
 
+            $this->strings[$msgid]->addReference($comment);
         }
 
         return $this->strings;
+    }
+
+    protected function hasTranslations($contents) {
+        
+        $this->startIndex1 = mb_strpos($contents, 'L10N::t(',$this->index);
+        $this->startIndex2 = mb_strpos($contents, 'L10N::te(',$this->index);
+        
+        if($this->startIndex1 === false && $this->startIndex2 === false) {
+            return false;
+        }
+        $index          = $this->startIndex1;
+        $this->open     = 'L10N::t(';
+        $this->close    = ')';
+        if($this->startIndex1 === false || ( $this->startIndex2!== false && $this->startIndex2 < $this->startIndex1) ) {
+            $this->open     = 'L10N::te(';
+            $index = $this->startIndex2;
+        }
+        $this->index = $index + mb_strlen($this->open);
+        
+        return true;
     }
 }
